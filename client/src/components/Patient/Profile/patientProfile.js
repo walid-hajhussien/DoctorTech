@@ -28,6 +28,9 @@ import { GetCaseInfo } from '../../../store/action/patientAction'
 import { Redirect } from 'react-router-dom';
 import Appointment from './patientComponent/Appointment';
 import NewCase from './patientComponent/NewCase';
+import Indicator from './patientComponent/Indicator'
+import {Health} from '../../../store/action/diseaseActions'
+import { GetUserInformation } from '../../../store/action/patientAction'
 
 function TabContainer(props) {
   return (
@@ -83,6 +86,7 @@ class PatientProfile extends React.Component {
       selectDate: false
     };
 
+    this.props.GetPationInformation(this.props.match.params.id)
     this.props.GetPatientCassis(this.props.match.params.id)
 
 
@@ -113,40 +117,43 @@ class PatientProfile extends React.Component {
 
 
   render() {
-    console.log('chifcomplaint ', this.props.patient)
+    console.log('chifcomplaint ', this.props.patient.selectPatient)
     const { classes } = this.props;
 
     const { value } = this.state;
-     // if the user has not login redirect for home page
+    // if the user has not login redirect for home page
     //  if(!this.props.login) {
     //   return (
     //     <Redirect to = '/' />
     //   )
     // }
     return (
-      <Grid container className={classes.root} spacing={16}>
+      <div>
+      {!this.props.patient.selectPatient && <CircularProgress style={{position: 'absolute',top: '50%',left: '50%'}} size={200} disableShrink />}
+      {this.props.patient.selectPatient && <Grid container className={classes.root} spacing={16}>
         <Grid container md={12} item>
           <Grid md={1} item></Grid>
-         
+
           <Grid md={4} item >
-          
+
             <PatientCard id={this.props.match.params.id}></PatientCard>
-           
+
             <Grid md={12} item >
-          <div style={{ display: 'inline-flex' }}>
-            <div>
-            <Appointment />
-            </div>
-            <div style={{ alignSelf: 'center',marginLeft:'10px' }}>
-            <NewCase />
-            </div>
-        </div>
-        </Grid>
+              <div style={{ display: 'inline-flex' }}>
+                <div>
+                  <Appointment />
+                </div>
+                <div style={{ alignSelf: 'center', marginLeft: '10px' }}>
+                  <NewCase />
+                </div>
+              </div>
+            </Grid>
+            <div style={{ display: 'inline-flex' }}>
             <FormControl className={classes.formControl}>
-            
-              <InputLabel htmlFor="age-simple">Select Case</InputLabel>  
-              
-              
+
+              <InputLabel htmlFor="age-simple">Select Case</InputLabel>
+
+
               <Select
 
 
@@ -157,7 +164,7 @@ class PatientProfile extends React.Component {
                   id: 'age-simple',
                 }}
               >
-              
+
                 {this.props.patient.currentCase.map((value, key) => {
                   return (
                     <MenuItem key={key} name="" id={value.createdAt} case={value.id} value={key}>{value.title}</MenuItem>
@@ -165,16 +172,20 @@ class PatientProfile extends React.Component {
                 })}
 
               </Select>
-             
+              
+
             </FormControl>
-           
+            
+            </div>
+
           </Grid>
-         
+
           <Grid md={1} style={{ justifyContent: 'center', margin: 'auto' }} item >{this.state.selectDate && moment(this.state.selectDate).fromNow()}{!(this.props.patient.currentPatient) && <CircularProgress disableShrink />}{!this.props.patient.currentPatient && 'Loading...'}</Grid>
           <Grid md={6} item >
             <PatientCalculation style={{}}></PatientCalculation>
+            {this.props.patient.PhysicalExamination[0] && <Indicator ></Indicator>}
           </Grid>
-          
+
         </Grid>
         <Grid container md={12} item>
           <Grid md={1} item></Grid>
@@ -221,10 +232,11 @@ class PatientProfile extends React.Component {
           <Grid md={1} item></Grid>
         </Grid>
 
-        
 
 
-      </Grid>
+
+      </Grid>}
+      </div>
     )
   }
 
@@ -249,7 +261,9 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     GetPatientCassis: (id) => dispatch(GetPatientCassis(id)),
-    GetCaseInfo: (id) => dispatch(GetCaseInfo(id))
+    GetCaseInfo: (id) => dispatch(GetCaseInfo(id)),
+    Health:(data) => dispatch(Health(data)),
+    GetPationInformation: (id) => dispatch(GetUserInformation(id))
   }
 }
 

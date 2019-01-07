@@ -2,6 +2,7 @@ const initState={
     patient: {},
     patientID: 0,
     patients: [],
+    selectPatient:false,
     patientSearchResults : [],
     isSearchNow: false,
     PatientProfile:[{
@@ -28,17 +29,7 @@ const initState={
       patientHistory:'',
       familyHistory:''
     }],
-    PhysicalExamination:[{
-      weight:'',
-      height:'',
-      bodyTemperature:'',
-      headNotes:'',
-      middleBodyNotes:'',
-      bottomBodyNotes:'',
-      diabetes:'',
-      BloodPressure:'',
-      BMI:''
-    }],
+    PhysicalExamination:[],
     medicalAnalysis:[],
     MedicalPrescription:[],
     PatientPlan:[{
@@ -65,8 +56,9 @@ const patientReducer = (state = initState, action) => {
     case "GetUserInformation":
       return {
         ...state,
-        PatientProfile: action.data
-      }
+        PatientProfile: action.data,
+        selectPatient:true
+      }  
     case "GetPatientCassis":
       return {
         ...state,
@@ -220,6 +212,12 @@ const patientReducer = (state = initState, action) => {
       return {
         ...state,
         currentCase: AddnewCase
+
+      }
+      case "unSelectPatient":
+      return{
+        ...state,
+        selectPatient:false
 
       }
 

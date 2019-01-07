@@ -46,7 +46,7 @@ export const GetUserInformation = (id) => {
   console.log('action', 'recived')
 
   return (dispatch, getState) => {
-
+    dispatch({ type: 'unSelectPatient'})
     $.ajax({
       type: "POST",
       url: '/patientInformation',
@@ -122,7 +122,7 @@ export const GetCaseInfo = (CaseId) => {
 
 
   return (dispatch, getState) => {
-
+    // dispatch({ type: 'ClearHealth' })
     $.ajax({
       type: "POST",
       url: '/GetCaseInfo',

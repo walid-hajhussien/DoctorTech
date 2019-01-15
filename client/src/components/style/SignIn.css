@@ -2,7 +2,7 @@
 
    
     padding: 20px;
-    margin: 12px;
+    margin: 20%;
     font-size: 13px;
    
 
@@ -19,7 +19,8 @@ img {
 }
 
 #btn{
-    width:100%
+    width:100%,
+    
 }
 
 #Right{

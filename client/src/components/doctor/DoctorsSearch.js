@@ -10,7 +10,9 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { compose } from 'redux'
 import { connect } from 'react-redux';
-import {searchAboutPatient} from '../../store/action/patientAction.js'
+import {searchAboutPatient} from '../../store/action/patientAction.js';
+import {searchForDoctor, startProgressBar} from '../../store/action/doctorActions.js';
+
 
 const styles = {
   root: {
@@ -31,7 +33,7 @@ const styles = {
 class DoctorSearch extends React.Component {
   constructor(props) {
     super(props);
-    this.state ={
+    this.state = {
        target : ''
     }
   }
@@ -45,10 +47,13 @@ class DoctorSearch extends React.Component {
   } 
 
  // functon to search about the target doctor when click on search button
-  handlOnClicle() {
-   
+  handleOnClick(e) {
+   e.preventDefault()
+   this.props.searchForDoctor(this.state)
+  //  this.props.startProgressBar(true);
 
   }
+
   render() {
     const classes = this.props.classes;
     return (
@@ -68,7 +73,7 @@ class DoctorSearch extends React.Component {
               />
               <IconButton className={classes.iconButton} 
                 aria-label="Search"
-                onClick={this.handlOnClicle.bind(this)}
+                onClick={this.handleOnClick.bind(this)}
               >
                 <SearchIcon />
               </IconButton>
@@ -95,7 +100,9 @@ const mapStateToProps = (state) => {
 //Note: add the action to the props
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchAboutPatient: (target) => dispatch(searchAboutPatient(target))
+    searchForDoctor: (target) => dispatch(searchForDoctor(target)),
+    startProgressBar: (isOpen) => dispatch(startProgressBar(isOpen))
+
   }
 }
 

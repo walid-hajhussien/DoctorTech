@@ -1,11 +1,13 @@
+
 #signUpCss{
+    margin-top: 40px;
     width: 80%;
-    padding: 20px;
-    margin: 12px;
-    font-size:13px;
+    padding-left: 150px;
+    padding-right: 4px;;
+    font-size:15px;
 }
 .form-control{
-    font-size:14px !important;
+    font-size:15px !important;
 }
 #btn{
     width: 100%;
@@ -17,6 +19,5 @@ body{
 }
 
 /* img {
-    width: 20%;
-    height: auto;
+    height: 100%;
   } */

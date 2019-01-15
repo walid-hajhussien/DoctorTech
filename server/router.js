@@ -5,8 +5,37 @@ const db = require('../database/index.js')
 const request = require('request')
 const nodemailer = require('nodemailer');
 var bcrypt = require('bcryptjs');
+const multer =require('multer');
+
 // Note: define the router
 var router = express.Router();
+
+
+
+//Note: config multer
+
+const fileFilter=(req,file,cb)=>{
+  if(file.mimetype==='image/jpeg' || file.mimetype==='image/png'){
+    cb(null,true)
+  }else{
+    cb(null,false)
+  }
+
+}
+
+const storage=multer.diskStorage({
+  destination:function(req,file,cb){
+    cb(null,'uploads/')
+  },
+  filename:function(req,file,cb){
+    cb(null,file.originalname)
+  }
+})
+
+const upload=multer({
+  storage:storage,
+  fileFilter:fileFilter
+})
 
 
 
@@ -21,37 +50,6 @@ let transporter = nodemailer.createTransport({
     pass: '0781401852' // generated ethereal password
   }
 })
-
-
-
-
-// this service to deal with predicate BreastCancer
-router.route('/breast-cancer')
-  .post(function (req, res) {
-    let featuresObj = req.body;
-    // recieve the data and config it to be ready to machine learning
-    let features = [parseFloat(featuresObj['Age']), parseFloat(featuresObj['BMI']), parseFloat(featuresObj['Glucose']),
-    parseFloat( featuresObj['Insulin'] ), parseFloat(featuresObj['HOMA']), parseFloat(featuresObj['Leptin']), 
-    parseFloat(featuresObj['Adiponectin']), parseFloat(featuresObj['Resistin']), parseFloat(featuresObj['MCP1'])];
-    console.log (features)
-    request.post('http://localhost:8000/breast-cancer/', { form: JSON.stringify({ features: features }) }, function (err, res, body) {
-      console.log("Success " + body);
-    });
-  });
-  
-// this service to deal with predicate HeartAttack
-router.route('/heart-attack')
-  .get(function (req, res) {
-    let featuresObj = req.body;
-    let features = [featuresObj['age'], featuresObj['sex'], featuresObj['cp'], featuresObj['trestbps'], featuresObj['chol'],
-    featuresObj['fbs'], featuresObj['restecg'], featuresObj['thalach'], featuresObj['exang'], featuresObj['oldpeak'],
-    featuresObj['slop'], featuresObj['ca'], featuresObj['thal']];
-    request.post('http://localhost:8000/heart-attack/', { form: JSON.stringify({ features: features }) }, function (err, res, body) {
-      console.log("Success " + body);
-    });
-  })
-
-
 
 // dealing with sign up request 
 router.route('/sign-up')
@@ -79,7 +77,7 @@ router.route('/sign-up')
                 if (err) throw err;
                 req.login(user, function (done) {
 
-                  let link = 'http://127.0.0.1:5000/confirmEmail/' + results[0].id
+                  let link = 'http://localhost:3000/confirmEmail/' + results[0].id
 
                   // setup email data with unicode symbols
                   let mailOptions = {
@@ -145,6 +143,7 @@ router.route('/login')
                 } else {
                   // add session for the user
                   req.login(user, function (done) {
+                    // req.session.cookie.expires = 60000;
                     console.log("user login Success")
                     res.send({
                       data: null || results[0],
@@ -270,6 +269,7 @@ router.route('/get-consult-outbox')
     });
 
   });
+  
 
 // service to deal with get consultation inbox request 
 router.route('/get-consult-inbox')
@@ -336,6 +336,22 @@ router.route('/patientInformation')
         res.send(result)
       }
     })
+  })
+// searh for doctors
+  router.route('/search-doctors')
+  .post(function (req, res) {
+    const target = req.body.target
+    console.log("ydegdjkegjhfdghke",req.body)
+    db.searchDoctor(target, function (err, result) {
+      if (err) {
+        throw err
+      } else {
+        res.send({
+          data: result
+        });
+      }
+    })
+
   })
 
 //Note :to select the patient Cassis
@@ -601,20 +617,74 @@ router.route('/CheckSession')
     }
   })
 
-//Database test
-router.route('/Diabetes').get(function(req,response){
+// this service to deal with predicate BreastCancer
+router.route('/breast-cancer')
+  .post(function (req, res) {
+    let featuresObj = req.body;
+    // recieve the data and config it to be ready to machine learning
+    let features = [parseFloat(featuresObj['Age']), parseFloat(featuresObj['BMI']), parseFloat(featuresObj['Glucose']),
+    parseFloat(featuresObj['Insulin']), parseFloat(featuresObj['HOMA']), parseFloat(featuresObj['Leptin']),
+    parseFloat(featuresObj['Adiponectin']), parseFloat(featuresObj['Resistin']), parseFloat(featuresObj['MCP1'])];
+
+    request.post('https://dtai.herokuapp.com/breast-cancer/', { form: JSON.stringify({ features: features }) }, function (err, response, body) {
+      let result = JSON.parse(body);
+      res.send({
+        data: {
+          predicate: result.predicate === 1 ? 'Negative' : 'Positive',
+          accuracy: result.accuracy
+        }
+      });
+    });
+  });
+
+// this service to deal with predicate HeartAttack
+router.route('/heart-attack')
+  .post(function (req, res) {
+    let featuresObj = req.body;
+    console.log(featuresObj);
+    let features = [parseFloat(featuresObj['Age']), parseFloat(featuresObj['Gender']), parseFloat(featuresObj['Cpt']),
+    parseFloat(featuresObj['Trestbps']), parseFloat(featuresObj['Chol']), parseFloat(featuresObj['Fbs']),
+    parseFloat(featuresObj['Restecg']), parseFloat(featuresObj['Thalach']), parseFloat(featuresObj['Exang']),
+    parseFloat(featuresObj['Oldpeak']),
+    parseFloat(featuresObj['Slope']), parseFloat(featuresObj['Ca']), parseFloat(featuresObj['Thalium'])];
+    request.post('https://dtai.herokuapp.com/heart-attack/', { form: JSON.stringify({ features: features }) }, function (err, response, body) {
+      let result = JSON.parse(body);
+      console.log(result)  
+       res.send({
+         data: {
+           predicate: result.predicate === 0 ? 'Negative' : 'Positive',
+           accuracy: result.accurcy
+         }
+       });
+    });
+  })
+
+router.route('/diabetes').post(function (req, response) {
   //Pregnancies,Glucose,BloodPressure,SkinThickness,Insulin,BMI,DiabetesPedigreeFunction,Age
-  var obj = JSON.stringify({ value: [[6, 148, 72, 35, 0, 40.6, 0.627, 50]] })
-  request.post('http://127.0.0.1:8000/diabetes/predict/', { form: obj }, function (err, res, body) {
-    console.log(body)
-    response.send(body)
+  let featuresObj = req.body;
+  // recieve the data and config it to be ready to machine learning
+  let features = [parseFloat(featuresObj['Pregnancies']), parseFloat(featuresObj['Glucose']), parseFloat(featuresObj['BloodPressure']),
+  parseFloat(featuresObj['SkinThickness']), parseFloat(featuresObj['Insulin']), parseFloat(featuresObj['BMI']),
+  parseFloat(featuresObj['DiabetesPedigreeFunction']), parseFloat(featuresObj['Age'])]
+
+  var obj = JSON.stringify({ value: [features] })
+  request.post('https://dtai.herokuapp.com/diabetes/predict/', { form: obj }, function (err, res, body) {
+  
+  let result = JSON.parse(body);
+   console.log(result)  
+    response.send({
+      data: {
+        predicate: result.predicate === 0 ? 'Negative' : 'Positive',
+        accuracy: result.accuracy
+      }
+    });
   })
 })
 
 //Get the Health predict from python server 
 router.route('/Health').post(function (req, response) {
   var obj = JSON.stringify({ wight: req.body.weight, height: req.body.height })
-  request.post('http://127.0.0.1:8000/health/predict/', { form: obj }, function (err, res, body) {
+  request.post('https://dtai.herokuapp.com/health/predict/', { form: obj }, function (err, res, body) {
     console.log(body)
     response.send(body)
   })
@@ -665,14 +735,98 @@ router.route('/confirmEmail/:id').get(function (req, res) {
   })
 
   // res.send(`<p>the email has been confirmed press in the below link to login</p>
-  // <a href="http://localhost:3000/signin">Login</a>`)
+  // <a href="https://doctortech.herokuapp.com/signin">Login</a>`)
 })
 
+
+//to upload image
+router.route('/upload').post(upload.single('pic'),function(req,res){
+    var id=req.body.id
+    var path=req.file.originalname
+    console.log('body',id)
+    console.log('file',path)
+
+    db.UploadImage(id,path,function(err,result){
+      
+      if(err){
+        throw err
+      }else{
+        db.selectDoctorInfo(id,function(err,result){
+          if(err){
+            throw err
+          }else{
+            res.send(result)
+          }
+        })
+        
+      }
+    })  
+})
 
 //Note: add the passport function 
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
+
+
+// service to deal with getAppointment request 
+router.route('/get-appointment')
+  .post(authenticationMiddleware(), function (req, res) {
+    var doctorId = req.body.doctorId
+    db.getAppointment(doctorId, function (err, results) {
+      if (err) throw err;
+      if (results.length > 0) {
+        res.send({
+          data: results
+        });
+      }
+    });
+  });
+
+// service to deal with getAppointment request 
+router.route('/delete-appointment')
+.post(authenticationMiddleware(), function (req, res) {
+  console.log(req.body);
+  var doctorId = req.body.doctorId;
+  var appointmentId = req.body.appointmentId;
+  db.deleteAppointment(doctorId, appointmentId, function(err, result){
+    if (err) {
+      throw err;
+    } else {
+      db.getAppointment(doctorId, function (err, results) {
+        if (err) {throw err;
+        } else {
+          res.send({
+            data: results
+          });
+        }
+      });
+    }
+  })
+});
+
+// service to update the doctor appointment  
+router.route('/update-appointment')
+.post(authenticationMiddleware(), function (req, res) {
+  console.log(req.body);
+  let newAppointment = req.body;
+  db.updateAppointment(newAppointment, function(err, result){
+    if (err) {
+      throw err;
+    } else {
+      db.getAppointment(newAppointment.id_Doctors, function (err, results) {
+        if (err) {throw err;
+        } else {
+          res.send({
+            data: results
+          });
+        }
+      });
+    }
+  })
+});
+
+
 
 passport.deserializeUser(function (id, done) {
   var query = `select * from Login where id=\"${id}\"`

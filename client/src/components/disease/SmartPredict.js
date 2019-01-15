@@ -12,7 +12,7 @@ import { withRouter } from 'react-router-dom'
 import { compose } from 'redux'
 import { connect } from 'react-redux';
 import BreastCancer from './BreastCancer';
-import Diabetes from './Diabetes.js';
+import Diabetes from './diabetes.js';
 import HeartAttack from './HeartAttack';
 import CircularProgress from '@material-ui/core/CircularProgress';
 let root = {

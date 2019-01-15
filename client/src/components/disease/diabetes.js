@@ -8,7 +8,7 @@ import {
   Button,
   Form
 } from "reactstrap";
-
+ 
 
 class Diabetes extends Component {
 constructor(props){
@@ -25,7 +25,7 @@ constructor(props){
   }
   this.handleChange = this.handleChange.bind(this)
 }
-
+//
 handleChange = (e) => {
 this.setState({
   [e.target.id]: e.target.value
